@@ -39,6 +39,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx remotion browser ensure
+      - name: Install ffmpeg
+        # render.mjs trims the first 2 (warm-up) frames with ffmpeg; the
+        # ubuntu-latest runner does NOT ship ffmpeg (proven 2026-11-27:
+        # all 10 jobs of run 46019622915 died with "spawnSync ffmpeg ENOENT").
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Render segment
         env:
           GL_MODE: swangle
