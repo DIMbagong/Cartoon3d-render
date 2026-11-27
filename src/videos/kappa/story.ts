@@ -102,7 +102,7 @@ const CAMS: Record<number, Key[]> = {
   3: [{ f: 338, s: (f) => dolly([0.35, 1.5, 3.6], [-0.8, 1.28, 1.2], pushK(f, 338, 0.0009)) }],
   4: [{ f: 626, s: (f) => dolly([1.9, 1.85, 10.6], [1.10, 0.92, 3.2], pushK(f, 626, 0.0004)) }],
   5: [{ f: 945, s: (f) => dolly([1.9, 1.85, 10.6], [1.10, 0.92, 3.2], pushK(f, 945, 0.0004)) }],
-  6: [{ f: 1312, s: (f) => dolly([7.6, 2.6, 12.6], [1.5, 0.8, 2.4], pushK(f, 1312, 0.0007)) }],
+  6: [{ f: 1312, s: (f) => dolly([2.0, 2.6, 15.5], [0.9, 0.8, 3.0], pushK(f, 1312, 0.0007), { fov: 44 }) }], // re-framed 2026-11-28: old cam put mascot+kappa on one screen-x (kappa hidden behind mascot) and the warning sign's dark back filled the right third; new cam separates them (kappa -0.4, mascot +0.67, sign out at +1.5)
   7: [{ f: 1615, s: (f) => dolly([4.6, 2.0, 10.8], [0.6, 0.9, 3.0], pushK(f, 1615, 0.0011)) }],
   8: [{ f: 1776, s: (f) => dolly([1.4, 2.8, 14.8], [1.2, 0.85, 3.4], pushK(f, 1776, 0.0009)) }],
 };
