@@ -13,7 +13,7 @@ const [from, to, scale, out, conc = "1"] = process.argv.slice(2);
 const browserExecutable = process.env.CHROME_PATH;
 const chromiumOptions = { gl: process.env.GL_MODE || "swangle" };
 const serveUrl = await bundle({
-  entryPoint: path.resolve("src/index.tsx"),
+  entryPoint: path.resolve(process.env.ENTRY || "src/index.tsx"),
   publicDir: path.resolve("public"),
 });
 const composition = await selectComposition({ serveUrl, id: process.env.COMP_ID || "BridgeShort", browserExecutable, chromiumOptions });

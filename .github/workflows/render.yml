@@ -2,13 +2,6 @@ name: render-bridge
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "src/**"
-      - "scripts/**"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/render.yml"
 
 permissions:
   contents: write
