@@ -7,9 +7,11 @@ import React from "react";
 import { Composition, registerRoot } from "remotion";
 import { KappaKonon, KONON_FRAMES } from "./konon/KappaKonon";
 import { CicakKonon, CICAK_FRAMES } from "./konon/CicakKonon";
+import { KitsuneAnime, ANIME_FRAMES } from "./anime/KitsuneAnime";
 
 const KappaSilent: React.FC = () => <KappaKonon silent />;
 const CicakSilent: React.FC = () => <CicakKonon silent />;
+const KitsuneSilent: React.FC = () => <KitsuneAnime silent />;
 
 const Root: React.FC = () => (
   <>
@@ -17,6 +19,14 @@ const Root: React.FC = () => (
       id="KappaKonon720"
       component={KappaSilent}
       durationInFrames={KONON_FRAMES}
+      fps={30}
+      width={720}
+      height={1280}
+    />
+    <Composition
+      id="KitsuneAnime720"
+      component={KitsuneSilent}
+      durationInFrames={ANIME_FRAMES}
       fps={30}
       width={720}
       height={1280}

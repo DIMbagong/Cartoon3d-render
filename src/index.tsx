@@ -4,6 +4,7 @@ import { BridgeShort, BRIDGE_FRAMES } from "./videos/bridge/Bridge";
 import { KappaShort, KAPPA_FRAMES } from "./videos/kappa/Kappa";
 import { KappaKonon, KONON_FRAMES } from "./konon/KappaKonon";
 import { CicakKonon, CICAK_FRAMES } from "./konon/CicakKonon";
+import { KitsuneAnime, ANIME_FRAMES } from "./anime/KitsuneAnime";
 
 const BridgeWithAudio: React.FC = () => (
   <AbsoluteFill>
@@ -89,6 +90,14 @@ const Root: React.FC = () => (
       id="KappaKonon720"
       component={KappaKonon}
       durationInFrames={KONON_FRAMES}
+      fps={30}
+      width={720}
+      height={1280}
+    />
+    <Composition
+      id="KitsuneAnime720"
+      component={KitsuneAnime}
+      durationInFrames={ANIME_FRAMES}
       fps={30}
       width={720}
       height={1280}

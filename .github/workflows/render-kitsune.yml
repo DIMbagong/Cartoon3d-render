@@ -1,0 +1,65 @@
+name: render-kitsune
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/anime/**"
+      - "src/index.tsx"
+      - "src/index-gh.tsx"
+      - "scripts/render.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - "public/fonts/**"
+      - ".github/workflows/render-kitsune.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { seg: 0, from: 0, to: 212 }
+          - { seg: 1, from: 213, to: 425 }
+          - { seg: 2, from: 426, to: 638 }
+          - { seg: 3, from: 639, to: 851 }
+          - { seg: 4, from: 852, to: 1064 }
+          - { seg: 5, from: 1065, to: 1277 }
+          - { seg: 6, from: 1278, to: 1490 }
+          - { seg: 7, from: 1491, to: 1703 }
+          - { seg: 8, from: 1704, to: 1916 }
+          - { seg: 9, from: 1917, to: 2127 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx remotion browser ensure
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Render segment
+        env:
+          GL_MODE: swangle
+          COMP_ID: KitsuneAnime720
+          SILENT: "1"
+          WARMUP: "0"
+          ENTRY: src/index-gh.tsx
+        run: node scripts/render.mjs ${{ matrix.from }} ${{ matrix.to }} 1 out/sega-${{ matrix.seg }}.mp4 2
+      - name: Push segment to its own branch
+        run: |
+          cp out/sega-${{ matrix.seg }}.mp4 /tmp/sega-${{ matrix.seg }}.mp4
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git switch --orphan sega-${{ matrix.seg }}
+          git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/sega-${{ matrix.seg }}.mp4 ./sega-${{ matrix.seg }}.mp4
+          git add sega-${{ matrix.seg }}.mp4
+          git commit -m "kitsune segment ${{ matrix.seg }} frames ${{ matrix.from }}-${{ matrix.to }}"
+          git push -f origin sega-${{ matrix.seg }}
