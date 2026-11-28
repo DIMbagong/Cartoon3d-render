@@ -1,0 +1,63 @@
+name: render-parade
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/videos/parade/**"
+      - "src/videos/bridge/toon.ts"
+      - "src/index.tsx"
+      - "scripts/render.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/render-parade.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { seg: 0, from: 0, to: 247 }
+          - { seg: 1, from: 248, to: 495 }
+          - { seg: 2, from: 496, to: 743 }
+          - { seg: 3, from: 744, to: 991 }
+          - { seg: 4, from: 992, to: 1239 }
+          - { seg: 5, from: 1240, to: 1487 }
+          - { seg: 6, from: 1488, to: 1735 }
+          - { seg: 7, from: 1736, to: 1983 }
+          - { seg: 8, from: 1984, to: 2231 }
+          - { seg: 9, from: 2232, to: 2479 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx remotion browser ensure
+      - name: Install ffmpeg
+        # render.mjs trims the first 2 (warm-up) frames with ffmpeg; the
+        # ubuntu-latest runner does NOT ship ffmpeg (proven 2026-11-27).
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Render segment
+        env:
+          GL_MODE: swangle
+          COMP_ID: ParadeShort720
+        run: node scripts/render.mjs ${{ matrix.from }} ${{ matrix.to }} 1 out/segp-${{ matrix.seg }}.mp4 2
+      - name: Push segment to its own branch
+        run: |
+          cp out/segp-${{ matrix.seg }}.mp4 /tmp/segp-${{ matrix.seg }}.mp4
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git switch --orphan segp-${{ matrix.seg }}
+          git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/segp-${{ matrix.seg }}.mp4 ./segp-${{ matrix.seg }}.mp4
+          git add segp-${{ matrix.seg }}.mp4
+          git commit -m "parade segment ${{ matrix.seg }} frames ${{ matrix.from }}-${{ matrix.to }}"
+          git push -f origin segp-${{ matrix.seg }}

@@ -5,6 +5,7 @@ import { KappaShort, KAPPA_FRAMES } from "./videos/kappa/Kappa";
 import { KappaKonon, KONON_FRAMES } from "./konon/KappaKonon";
 import { CicakKonon, CICAK_FRAMES } from "./konon/CicakKonon";
 import { KitsuneAnime, ANIME_FRAMES } from "./anime/KitsuneAnime";
+import { ParadeShort, PARADE_FRAMES } from "./videos/parade/Parade";
 
 const BridgeWithAudio: React.FC = () => (
   <AbsoluteFill>
@@ -17,6 +18,13 @@ const KappaWithAudio: React.FC = () => (
   <AbsoluteFill>
     <KappaShort />
     <Audio src={staticFile("kappa-mix.wav")} />
+  </AbsoluteFill>
+);
+
+const ParadeWithAudio: React.FC = () => (
+  <AbsoluteFill>
+    <ParadeShort />
+    <Audio src={staticFile("parade-mix.wav")} />
   </AbsoluteFill>
 );
 
@@ -85,6 +93,22 @@ const Root: React.FC = () => (
       fps={30}
       width={1080}
       height={1920}
+    />
+    <Composition
+      id="ParadeShort720"
+      component={ParadeShort}
+      durationInFrames={PARADE_FRAMES}
+      fps={30}
+      width={720}
+      height={1280}
+    />
+    <Composition
+      id="ParadeFinal720"
+      component={ParadeWithAudio}
+      durationInFrames={PARADE_FRAMES}
+      fps={30}
+      width={720}
+      height={1280}
     />
     <Composition
       id="KappaKonon720"
