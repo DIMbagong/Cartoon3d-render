@@ -12,7 +12,7 @@ export type LightPreset = {
   sunCol: string; sunI: number; sky: string; ground: string; hemiI: number;         // three lights (unpatched mats only)
   bias: number; normalBias: number;
 };
-export const LIGHTS: Record<"day" | "golden", LightPreset> = {
+export const LIGHTS: Record<"day" | "golden" | "night", LightPreset> = {
   day: {
     az: 75, el: 48,
     lit: [1.58, 1.5, 1.33], shade: [0.3, 0.29, 0.36], lift: [0.05, 0.06, 0.11], lambert: 0.35, sideK: 0.84, term: 0.2,
@@ -31,6 +31,15 @@ export const LIGHTS: Record<"day" | "golden", LightPreset> = {
     sunCol: "#ffab5e", sunI: 5.5, sky: "#d8b0b8", ground: "#8a6a60", hemiI: 0.5,
     bias: -0.0006, normalBias: 0.03,
   },
+  night: {
+    az: 215, el: 34,
+    lit: [0.62, 0.72, 1.02], shade: [0.10, 0.12, 0.24], lift: [0.02, 0.03, 0.09], lambert: 0.35, sideK: 0.84, term: 0.15,
+    charTint: [0.84, 0.90, 1.06], charShade: 0.8, charGrad: 0.07, bodyGrad: 0.2, sideTint: [0.86, 0.90, 1.05],
+    blob: [0.30, 0.32, 0.45], actorShadow: false,
+    top: "#0b1e42", hor: "#33507e", skyCurve: [0.0, 0.5, 0.6], fog: "#1c2c4e", fogNear: 30, fogFar: 260, sunDisc: "#e8efff",
+    sunCol: "#cfe0ff", sunI: 1.15, sky: "#aebfdf", ground: "#1a2030", hemiI: 0.34,
+    bias: -0.00025, normalBias: 0.015,
+  },
 };
 
 /** world-only look per light (sky stops by elevation in degrees, river colours, cloud palette). All colours are
@@ -42,7 +51,7 @@ export type WorldLook = {
   sat: number;                                                // shade.ts uSat: world albedo saturation (1 = as painted)
   cloud: { lit: string; mid: string; shade: string };
 };
-export const LOOK: Record<"day" | "golden", WorldLook> = {
+export const LOOK: Record<"day" | "golden" | "night", WorldLook> = {
   day: {
     // depth.md 2.2: horizon #9fb6e6 just above the skyline, upper sky #5e93d9 at ~20 deg (grade: frame top #5997e2)
     sky: { c: ["#b8d0ec", "#9cbfea", "#6a9fe0", "#4f8cdb", "#3373cc"], e: [0, 3, 8, 16, 40] },
@@ -59,5 +68,12 @@ export const LOOK: Record<"day" | "golden", WorldLook> = {
     cloud: { lit: "#ffd2a8", mid: "#f2a08f", shade: "#a98fc4" },
     bounce: [0.04, 0.02, 0.0],
     sat: 1.1,
+  },
+  night: {
+    sky: { c: ["#2a4470", "#22386a", "#182c58", "#101f42", "#0a1730"], e: [0, 3, 8, 16, 40] },
+    water: { near: "#16283f", mid: "#122238", far: "#0c1a30", crest: "#3d5a80", trough: "#081426", glint: "#cfe0ff", shade: [0.4, 0.48, 0.7] },
+    cloud: { lit: "#8fa3c8", mid: "#5d7195", shade: "#33436b" },
+    bounce: [0, 0, 0.02],
+    sat: 1.0,
   },
 };

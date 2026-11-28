@@ -6,6 +6,7 @@ import { KappaKonon, KONON_FRAMES } from "./konon/KappaKonon";
 import { CicakKonon, CICAK_FRAMES } from "./konon/CicakKonon";
 import { KitsuneAnime, ANIME_FRAMES } from "./anime/KitsuneAnime";
 import { ParadeShort, PARADE_FRAMES } from "./videos/parade/Parade";
+import { MoonShort, MOON_FRAMES } from "./videos/moon/Moon";
 
 const BridgeWithAudio: React.FC = () => (
   <AbsoluteFill>
@@ -25,6 +26,13 @@ const ParadeWithAudio: React.FC = () => (
   <AbsoluteFill>
     <ParadeShort />
     <Audio src={staticFile("parade-mix.wav")} />
+  </AbsoluteFill>
+);
+
+const MoonWithAudio: React.FC = () => (
+  <AbsoluteFill>
+    <MoonShort />
+    <Audio src={staticFile("moon-mix.wav")} />
   </AbsoluteFill>
 );
 
@@ -93,6 +101,22 @@ const Root: React.FC = () => (
       fps={30}
       width={1080}
       height={1920}
+    />
+    <Composition
+      id="MoonShort720"
+      component={MoonShort}
+      durationInFrames={MOON_FRAMES}
+      fps={30}
+      width={1280}
+      height={720}
+    />
+    <Composition
+      id="MoonFinal720"
+      component={MoonWithAudio}
+      durationInFrames={MOON_FRAMES}
+      fps={30}
+      width={1280}
+      height={720}
     />
     <Composition
       id="ParadeShort720"
