@@ -28,12 +28,14 @@ const composition = await selectComposition({ serveUrl, id: process.env.COMP_ID 
 // wide shot are sacrificed as warm-up).
 const fromN = Number(from);
 const toN = Number(to);
-const renderFrom = Math.max(0, fromN - 2);
+const warmup = process.env.WARMUP !== "0";
+const renderFrom = warmup ? Math.max(0, fromN - 2) : fromN;
 const rawOut = out.replace(/\.mp4$/i, ".raw.mp4");
 const t0 = Date.now();
 await renderMedia({
   composition,
   serveUrl,
+  inputProps: process.env.SILENT === "1" ? { silent: true } : {},
   codec: "h264",
   outputLocation: rawOut,
   frameRange: [renderFrom, toN],
@@ -49,12 +51,21 @@ await renderMedia({
     }
   },
 });
-execFileSync(
-  "ffmpeg",
-  ["-y", "-v", "error", "-i", rawOut, "-vf", "trim=start_frame=2,setpts=PTS-STARTPTS", "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "30", out],
-  { stdio: "inherit" }
-);
+if (warmup) {
+  execFileSync(
+    "ffmpeg",
+    ["-y", "-v", "error", "-i", rawOut, "-vf", "trim=start_frame=2,setpts=PTS-STARTPTS", "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-r", "30", out],
+    { stdio: "inherit" }
+  );
+} else {
+  // 2D compositions have no warm-up defect: keep every rendered frame.
+  execFileSync(
+    "ffmpeg",
+    ["-y", "-v", "error", "-i", rawOut, "-vf", "setpts=PTS-STARTPTS", "-c:v", "libx264", "-crf", "16", "-pix_fmt", "yuv420p", "-r", "30", out],
+    { stdio: "inherit" }
+  );
+}
 fs.rmSync(rawOut, { force: true });
-const kept = toN - fromN + 1 - (fromN === 0 ? 2 : 0);
+const kept = toN - fromN + 1 - (warmup && fromN === 0 ? 2 : 0);
 const s = (Date.now() - t0) / 1000;
-console.log(`DONE ${kept} frames kept (rendered ${renderFrom}-${toN}, dropped first 2) in ${s.toFixed(0)}s`);
+console.log(`DONE ${kept} frames kept (rendered ${renderFrom}-${toN}, warmup=${warmup}) in ${s.toFixed(0)}s`);
