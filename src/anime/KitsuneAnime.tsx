@@ -96,7 +96,7 @@ const InariPlate: React.FC = () => (
   </svg>
 );
 
-const Scene: React.FC<{ i: number }> = ({ i }) => {
+const SceneContent: React.FC<{ i: number }> = ({ i }) => {
   const frame = useCurrentFrame();
   const g = LINES[i].start * 30 + frame; // global frame
   const V = (v: SkyVariant) => <Shrine variant={v} frame={g} />;
@@ -240,6 +240,120 @@ const Scene: React.FC<{ i: number }> = ({ i }) => {
   }
 };
 
+
+// ---------------------------------------------------------------- camera
+// Cinematic camera over the flat scene: shot sizes (wide/med/close/ecu),
+// push-in / pull-out / pan moves, hard punch cuts inside a line, dutch
+// angle, impact shake. Karaoke stays OUTSIDE the camera (safe zone fixed).
+type Shot = {
+  at: number;            // local frame where this sub-shot starts
+  s: number;             // base scale (1 = wide)
+  fx: number; fy: number; // focus point in frame px (kept centered)
+  move?: "push" | "pull" | "panR" | "panL";
+  amt?: number;          // move amount (scale factor or px)
+  rot?: number;          // dutch angle degrees
+  shake?: boolean;
+  vig?: boolean;
+};
+const SHOTS: Shot[][] = [
+  // L1 hook: wide push-in, then PUNCH to Kiko at the poof (local 153)
+  [{ at: 0, s: 1.0, fx: 360, fy: 640, move: "push", amt: 0.12 },
+   { at: 153, s: 1.5, fx: 251, fy: 580, move: "push", amt: 0.08, shake: true }],
+  // L2 intro: close on Kiko, pan right toward the mascot
+  [{ at: 0, s: 1.8, fx: 300, fy: 560, move: "panR", amt: 110 }],
+  // L3 trickster: low dutch-angle medium, slow push
+  [{ at: 0, s: 1.32, fx: 371, fy: 660, move: "push", amt: 0.07, rot: -2 }],
+  // L4 guardian: reverent wide pull-out
+  [{ at: 0, s: 1.18, fx: 360, fy: 620, move: "pull", amt: 0.16 }],
+  // L5 tails: medium push, then hard zoom OUT to wide as the 9 tails fan open (local 155)
+  [{ at: 0, s: 1.52, fx: 362, fy: 560, move: "push", amt: 0.06 },
+   { at: 155, s: 1.0, fx: 360, fy: 640, shake: true }],
+  // L6 inari: two-shot push, then INSERT close-up of the plate (local 90)
+  [{ at: 0, s: 1.25, fx: 360, fy: 620, move: "push", amt: 0.08 },
+   { at: 90, s: 2.3, fx: 360, fy: 865 }],
+  // L7 dog: medium, then pan right tracking the dog in (local 45)
+  [{ at: 0, s: 1.3, fx: 400, fy: 620 },
+   { at: 45, s: 1.38, fx: 400, fy: 620, move: "panR", amt: 80 }],
+  // L8 kitsunebi night: wide slow push through the orbs, vignette
+  [{ at: 0, s: 1.05, fx: 360, fy: 600, move: "push", amt: 0.17, vig: true }],
+  // L9 sunshower: joyful wide pull-out
+  [{ at: 0, s: 1.15, fx: 360, fy: 620, move: "pull", amt: 0.15 }],
+  // L10 the lesson: close two-shot, very slow push
+  [{ at: 0, s: 1.65, fx: 430, fy: 555, move: "push", amt: 0.1, vig: true }],
+  // L11 the reveal: ECU on Kiko's face
+  [{ at: 0, s: 2.6, fx: 367, fy: 550, move: "push", amt: 0.1, vig: true }],
+  // L12 closing: wide pull-out to the establishing frame
+  [{ at: 0, s: 1.14, fx: 360, fy: 640, move: "pull", amt: 0.14 }],
+];
+const easeIO = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+const Cam: React.FC<{ line: number; dur: number; children: React.ReactNode }> = ({ line, dur, children }) => {
+  const f = useCurrentFrame();
+  const shots = SHOTS[line];
+  let si = 0;
+  for (let k = 0; k < shots.length; k++) if (f >= shots[k].at) si = k;
+  const sh = shots[si];
+  const end = si + 1 < shots.length ? shots[si + 1].at : dur;
+  const p = Math.min(1, Math.max(0, (f - sh.at) / Math.max(1, end - sh.at)));
+  const e = easeIO(p);
+  let s = sh.s, fx = sh.fx;
+  if (sh.move === "push") s = sh.s * (1 + (sh.amt ?? 0.1) * e);
+  if (sh.move === "pull") s = sh.s * (1 + (sh.amt ?? 0.1) * (1 - e));
+  if (sh.move === "panR") fx = sh.fx + (sh.amt ?? 80) * e;
+  if (sh.move === "panL") fx = sh.fx - (sh.amt ?? 80) * e;
+  let jx = 0, jy = 0;
+  if (sh.shake && f - sh.at < 8) {
+    const d = (8 - (f - sh.at)) / 8;
+    jx = Math.sin(f * 2.7) * 5 * d; jy = Math.cos(f * 3.4) * 4 * d;
+  }
+  return (
+    <AbsoluteFill style={{ overflow: "hidden" }}>
+      <div style={{
+        position: "absolute", inset: 0,
+        transform: `translate(${360 - fx + jx}px, ${640 - sh.fy + jy}px) scale(${s}) rotate(${sh.rot ?? 0}deg)`,
+        transformOrigin: `${fx}px ${sh.fy}px`,
+      }}>
+        {children}
+      </div>
+      {sh.vig ? (
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, transparent 52%, rgba(10,8,24,0.38) 100%)" }} />
+      ) : null}
+    </AbsoluteFill>
+  );
+};
+
+const SpeedLines: React.FC<{ cx: number; cy: number; from: number; to: number }> = ({ cx, cy, from, to }) => {
+  const f = useCurrentFrame();
+  if (f < from || f > to) return null;
+  const o = interpolate(f, [from, from + 3, to - 3, to], [0, 0.85, 0.85, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const lines = Array.from({ length: 26 }, (_, i) => {
+    const a = (i / 26) * Math.PI * 2 + (i % 2) * 0.12;
+    const r1 = 120 + (i % 3) * 36, r2 = 560;
+    return <line key={i} x1={cx + Math.cos(a) * r1} y1={cy + Math.sin(a) * r1} x2={cx + Math.cos(a) * r2} y2={cy + Math.sin(a) * r2} />;
+  });
+  return (
+    <svg viewBox="0 0 720 1280" style={{ position: "absolute", inset: 0 }} width="100%" height="100%" opacity={o}>
+      <g stroke="#ffffff" strokeWidth={5} strokeLinecap="round">{lines}</g>
+    </svg>
+  );
+};
+
+const Scene: React.FC<{ i: number; dur: number }> = ({ i, dur }) => {
+  const f = useCurrentFrame();
+  const flash = i === 0 && f >= 151 && f <= 156
+    ? interpolate(f, [151, 153, 156], [0, 0.95, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) : 0;
+  return (
+    <AbsoluteFill>
+      <Cam line={i} dur={dur}>
+        <SceneContent i={i} />
+      </Cam>
+      {i === 0 ? <SpeedLines cx={251} cy={580} from={153} to={172} /> : null}
+      {i === 4 ? <SpeedLines cx={360} cy={620} from={155} to={174} /> : null}
+      {flash > 0 ? <div style={{ position: "absolute", inset: 0, backgroundColor: "#ffffff", opacity: flash }} /> : null}
+    </AbsoluteFill>
+  );
+};
+
 export const KitsuneAnime: React.FC<{ silent?: boolean }> = ({ silent }) => {
   const [handle] = React.useState(() => delayRender("font"));
   React.useEffect(() => {
@@ -252,7 +366,7 @@ export const KitsuneAnime: React.FC<{ silent?: boolean }> = ({ silent }) => {
         const until = i === LINES.length - 1 ? ANIME_FRAMES : Math.round(LINES[i + 1].start * 30);
         return (
           <Sequence key={i} from={from} durationInFrames={until - from}>
-            <Scene i={i} />
+            <Scene i={i} dur={until - from} />
             <Karaoke line={i} />
           </Sequence>
         );
