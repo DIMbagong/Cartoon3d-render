@@ -1,0 +1,61 @@
+name: render-phone45
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/videos/phone45/**"
+      - "src/videos/bridge/**"
+      - "src/index.tsx"
+      - "scripts/render.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/render-phone45.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { seg: 0, from: 0, to: 312 }
+          - { seg: 1, from: 313, to: 625 }
+          - { seg: 2, from: 626, to: 938 }
+          - { seg: 3, from: 939, to: 1251 }
+          - { seg: 4, from: 1252, to: 1564 }
+          - { seg: 5, from: 1565, to: 1877 }
+          - { seg: 6, from: 1878, to: 2190 }
+          - { seg: 7, from: 2191, to: 2503 }
+          - { seg: 8, from: 2504, to: 2816 }
+          - { seg: 9, from: 2817, to: 3125 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx remotion browser ensure
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Render segment
+        env:
+          GL_MODE: swangle
+          COMP_ID: Phone45Short720
+        run: node scripts/render.mjs ${{ matrix.from }} ${{ matrix.to }} 1 out/segph-${{ matrix.seg }}.mp4 2
+      - name: Push segment to its own branch
+        run: |
+          cp out/segph-${{ matrix.seg }}.mp4 /tmp/segph-${{ matrix.seg }}.mp4
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git switch --orphan segph-${{ matrix.seg }}
+          git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/segph-${{ matrix.seg }}.mp4 ./segph-${{ matrix.seg }}.mp4
+          git add segph-${{ matrix.seg }}.mp4
+          git commit -m "segph-${{ matrix.seg }}"
+          git push -f origin segph-${{ matrix.seg }}

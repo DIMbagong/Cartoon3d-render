@@ -7,6 +7,7 @@ import { CicakKonon, CICAK_FRAMES } from "./konon/CicakKonon";
 import { KitsuneAnime, ANIME_FRAMES } from "./anime/KitsuneAnime";
 import { ParadeShort, PARADE_FRAMES } from "./videos/parade/Parade";
 import { MoonShort, MOON_FRAMES } from "./videos/moon/Moon";
+import { Phone45Short, PHONE45_FRAMES } from "./videos/phone45/Phone45";
 
 const BridgeWithAudio: React.FC = () => (
   <AbsoluteFill>
@@ -33,6 +34,13 @@ const MoonWithAudio: React.FC = () => (
   <AbsoluteFill>
     <MoonShort />
     <Audio src={staticFile("moon-mix.wav")} />
+  </AbsoluteFill>
+);
+
+const Phone45WithAudio: React.FC = () => (
+  <AbsoluteFill>
+    <Phone45Short />
+    <Audio src={staticFile("phone45-mix.wav")} />
   </AbsoluteFill>
 );
 
@@ -117,6 +125,22 @@ const Root: React.FC = () => (
       fps={30}
       width={1280}
       height={720}
+    />
+    <Composition
+      id="Phone45Short720"
+      component={Phone45Short}
+      durationInFrames={PHONE45_FRAMES}
+      fps={30}
+      width={720}
+      height={1280}
+    />
+    <Composition
+      id="Phone45Final720"
+      component={Phone45WithAudio}
+      durationInFrames={PHONE45_FRAMES}
+      fps={30}
+      width={720}
+      height={1280}
     />
     <Composition
       id="ParadeShort720"
