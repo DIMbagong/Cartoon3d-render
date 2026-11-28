@@ -6,6 +6,7 @@ on:
     paths:
       - "src/konon/**"
       - "src/index.tsx"
+      - "src/index-gh.tsx"
       - "scripts/render.mjs"
       - "package.json"
       - "package-lock.json"
@@ -48,6 +49,7 @@ jobs:
           GL_MODE: swangle
           COMP_ID: CicakKonon720
           SILENT: "1"
+          ENTRY: src/index-gh.tsx
           WARMUP: "0"
         run: node scripts/render.mjs ${{ matrix.from }} ${{ matrix.to }} 1 out/segc-${{ matrix.seg }}.mp4 2
       - name: Push segment to its own branch
