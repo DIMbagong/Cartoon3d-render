@@ -106,8 +106,8 @@ export const dofAt = (f: number): { focus: (f: number) => V3; cInf: number } => 
   switch (id) {
     case 1: return { focus: () => [0, 1.3, 0], cInf: 18 };
     case 2: return { focus: () => [0, 1.2, 0], cInf: 13 };
-    case 3: return f < 730 ? { focus: () => [0, 1.2, 0], cInf: 16 } : { focus: () => [-2, 2, -10], cInf: 20 };
-    case 4: return { focus: () => [0, 1.2, 0], cInf: 22 };
+    case 3: return f < 730 ? { focus: () => [0, 1.2, 0], cInf: 22 } : { focus: () => [-2, 2, -10], cInf: 24 };
+    case 4: return { focus: () => [0, 1.2, 0], cInf: 27 };
     case 5: return { focus: () => [-6, 10, -40], cInf: 34 };
     case 6: return { focus: () => [0, 1.25, 0], cInf: 16 };
     default: return { focus: () => [0, 1.2, 0], cInf: 20 };

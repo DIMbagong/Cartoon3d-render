@@ -175,9 +175,9 @@ export class World {
         lampDisc.position.set(2.33, 0.66, hz); lampDisc.rotation.y = Math.PI / 2; this.car.add(lampDisc);
         const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowT, color: new THREE.Color(1.5, 1.25, 0.7), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
         glow.position.set(2.42, 0.66, hz); glow.scale.setScalar(1.1); this.car.add(glow);
-        const beam = new THREE.Mesh(new THREE.ConeGeometry(0.95, 3.6, 14, 1, true),
-          new THREE.MeshBasicMaterial({ color: "#ffdf9e", transparent: true, opacity: 0.06, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
-        beam.rotation.z = Math.PI / 2; beam.position.set(4.1, 0.6, hz); this.car.add(beam);
+        const beam = new THREE.Mesh(new THREE.ConeGeometry(0.65, 2.4, 14, 1, true),
+          new THREE.MeshBasicMaterial({ color: "#ffdf9e", transparent: true, opacity: 0.028, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
+        beam.rotation.z = Math.PI / 2; beam.position.set(3.5, 0.6, hz); this.car.add(beam);
         const tail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 0.3), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.8, 0.35, 0.25), fog: false }));
         tail.position.set(-1.78, 0.7, hz); this.car.add(tail);
       }
@@ -329,11 +329,15 @@ export class World {
       this.layDots(eye, new THREE.Vector3(this.heroTree.position.x, 3.3, HERO_TREE_Z), 0, 22);
     }
     if (f >= LINE_MOON[0] && f < LINE_MOON[1]) {
-      this.layDots(new THREE.Vector3(0, 1.8, 0.85), this.moonGroup.position, 22, 30);
+      const from = new THREE.Vector3(0, 1.8, 0.85);
+      const to = from.clone().addScaledVector(new THREE.Vector3().subVectors(this.moonGroup.position, from).normalize(), 55);
+      this.layDots(from, to, 22, 30);
     }
     if (f >= LINE_MOON2[0] && f < LINE_MOON2[1]) {
       this.ghost.visible = true;
-      this.layDots(new THREE.Vector3(-5.2, 1.7, 0.85), this.moonGroup.position, 52, 30);
+      const from = new THREE.Vector3(-5.2, 1.7, 0.85);
+      const to = from.clone().addScaledVector(new THREE.Vector3().subVectors(this.moonGroup.position, from).normalize(), 55);
+      this.layDots(from, to, 52, 30);
     }
     // ---- cast + effects (same application as the bridge/kappa worlds) ----
     const right = V(0, 0, 0).setFromMatrixColumn(cam.matrixWorld, 0);

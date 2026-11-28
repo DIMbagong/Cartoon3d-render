@@ -69,10 +69,10 @@ export const stageK = (id: number, t: number, cam: CamInfo): Stage => {
   const out: Stage = { places: [], fx: [] };
   const f = Math.round(t * FPS);
   // driver (front seat, x +0.62) and mascot (back seat, x -0.62), seated
-  out.places.push(personP(cam, DRIVER_WHO, 0.62, 0.30, 0.8, true, false,
-    {}, { mode: "swing", expr: f >= 2404 ? "grin" : "neutral", blink: lidAt(t, 3) }, 0.98));
-  out.places.push(personP(cam, MASCOT_WHO, -0.62, 0.30, 0.8, true, false,
-    {}, { mode: "swing", expr: mascotExpr(f), blink: lidAt(t, 5) }, 0.95));
+  out.places.push(personP(cam, DRIVER_WHO, 0.62, 0.30, 0.8, false, false,
+    { mode: "sit", expr: f >= 2404 ? "grin" : "neutral", blink: lidAt(t, 3) }, {}, 0.98));
+  out.places.push(personP(cam, MASCOT_WHO, -0.62, 0.30, 0.8, false, false,
+    { mode: "sit", expr: mascotExpr(f), blink: lidAt(t, 5) }, {}, 0.95));
   // puzzlement mark during L2, aha bursts at L3 and L10
   if (f >= 250 && f < 370) out.fx.push({ key: "fxq", cw: 360, ch: 360, draw: fxQuestion, x: -0.35, y: 2.75, z: 0.85, w: 0.55, h: 0.55 });
   if ((f >= 445 && f < 535) || (f >= 1870 && f < 1960)) {
